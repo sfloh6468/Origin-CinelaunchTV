@@ -1,0 +1,7 @@
+{
+  "name": "CineLaunch TV",
+  "description": "A TV-optimized personal movie library and launcher. Manually add YouTube videos, movies, and photos with descriptions and categories, then launch them directly on your Google TV.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
