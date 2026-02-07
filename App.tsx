@@ -12,7 +12,7 @@ const App: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Initial Load
+  // Initial Load from LocalStorage
   useEffect(() => {
     const savedMovies = localStorage.getItem('cinelaunch_movies');
     const savedCategories = localStorage.getItem('cinelaunch_categories');
@@ -27,13 +27,17 @@ const App: React.FC = () => {
     if (savedCategories) {
       try { 
         const parsed = JSON.parse(savedCategories);
+        // Ensure default categories are always present and append custom ones
         const merged = Array.from(new Set([...DEFAULT_CATEGORIES, ...parsed]));
         setCategories(merged); 
-      } catch (e) { console.error("Error loading categories:", e); }
+      } catch (e) { 
+        console.error("Error loading categories:", e);
+        setCategories(DEFAULT_CATEGORIES);
+      }
     }
   }, []);
 
-  // Sync to Storage
+  // Sync state to Storage
   useEffect(() => {
     localStorage.setItem('cinelaunch_movies', JSON.stringify(movies));
   }, [movies]);
@@ -43,6 +47,7 @@ const App: React.FC = () => {
   }, [categories]);
 
   const handleAddOrUpdateMovie = useCallback((movieData: Movie) => {
+    // 1. Update Movies List
     setMovies(prev => {
       if (movieToEdit) {
         return prev.map(m => m.id === movieToEdit.id ? movieData : m);
@@ -51,9 +56,13 @@ const App: React.FC = () => {
       }
     });
     
-    // Check if we need to add a new category to the global list
+    // 2. Add New Category if it doesn't exist in master list
     if (movieData.category && !categories.includes(movieData.category)) {
-      setCategories(prev => [...prev, movieData.category]);
+      setCategories(prev => {
+        const newList = [...prev, movieData.category];
+        localStorage.setItem('cinelaunch_categories', JSON.stringify(newList));
+        return newList;
+      });
     }
 
     setIsFormOpen(false);
@@ -61,7 +70,11 @@ const App: React.FC = () => {
   }, [movieToEdit, categories]);
 
   const handleDeleteMovie = useCallback((id: string) => {
-    setMovies(prev => prev.filter(m => m.id !== id));
+    setMovies(prev => {
+      const filtered = prev.filter(m => m.id !== id);
+      localStorage.setItem('cinelaunch_movies', JSON.stringify(filtered));
+      return filtered;
+    });
   }, []);
 
   const handleEditClick = useCallback((movie: Movie) => {
@@ -99,7 +112,7 @@ const App: React.FC = () => {
             <i className="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-slate-500"></i>
             <input 
               type="text" 
-              placeholder="Search by title, description, or genre..." 
+              placeholder="Search by title, genre, or description..." 
               className="w-full bg-slate-900/60 border border-white/10 rounded-2xl py-4 pl-14 pr-6 text-slate-100 focus:ring-2 focus:ring-sky-500 focus:bg-slate-900 transition-all outline-none placeholder:text-slate-600 font-medium"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -115,7 +128,7 @@ const App: React.FC = () => {
           </button>
         </div>
 
-        {/* Dynamic Categories Bar */}
+        {/* Categories Navigation Bar */}
         <div className="max-w-[1600px] mx-auto mt-8 flex gap-3 overflow-x-auto pb-2 no-scrollbar scroll-smooth">
           <button 
             onClick={() => setActiveCategory('All')}
@@ -149,13 +162,13 @@ const App: React.FC = () => {
             <div className="w-32 h-32 bg-slate-900/40 rounded-full flex items-center justify-center mb-8 ring-1 ring-white/5">
               <i className="fas fa-video-slash text-5xl text-slate-700"></i>
             </div>
-            <h2 className="text-3xl font-black text-slate-300 tracking-tight">Empty Library</h2>
-            <p className="text-slate-500 mt-3 max-w-md text-lg font-medium leading-relaxed">Start adding YouTube videos to build your custom Google TV launcher.</p>
+            <h2 className="text-3xl font-black text-slate-300 tracking-tight">Library Empty</h2>
+            <p className="text-slate-500 mt-3 max-w-md text-lg font-medium leading-relaxed">Start adding content to build your Google TV launcher.</p>
             <button 
               onClick={() => setIsFormOpen(true)} 
               className="mt-10 px-10 py-4 bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-sky-500 hover:text-white transition-all"
             >
-              Add first entry
+              Create first entry
             </button>
           </div>
         ) : (
@@ -181,19 +194,19 @@ const App: React.FC = () => {
         />
       )}
 
-      {/* Persistent TV Remote Helper */}
+      {/* Controller Guide for TV Remote */}
       <footer className="fixed bottom-0 left-0 right-0 bg-slate-950/95 border-t border-white/5 px-12 py-4 text-[11px] text-slate-500 flex justify-between items-center z-50 backdrop-blur-xl">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-sky-500 rounded-full"></div>
-            <span className="font-black text-white tracking-[0.1em]">CINELAUNCH ENGINE v1.5</span>
+            <span className="font-black text-white tracking-[0.1em]">CINELAUNCH ENGINE v1.5.0</span>
           </div>
-          <span className="opacity-40 font-medium">READY FOR GOOGLE TV</span>
+          <span className="opacity-40 font-medium tracking-wide">ANDROID TV READY</span>
         </div>
         <div className="flex gap-10 font-black uppercase tracking-widest text-slate-400">
-          <span className="flex items-center gap-3"><kbd className="bg-slate-800 px-2 py-1 rounded text-sky-400 border border-white/10">OK</kbd> Launch</span>
-          <span className="flex items-center gap-3"><kbd className="bg-slate-800 px-2 py-1 rounded text-sky-400 border border-white/10">↔</kbd> Browse</span>
-          <span className="flex items-center gap-3"><kbd className="bg-slate-800 px-2 py-1 rounded text-sky-400 border border-white/10">MENU</kbd> Edit</span>
+          <span className="flex items-center gap-3"><kbd className="bg-slate-800 px-2 py-1 rounded text-sky-400 border border-white/10 shadow-sm shadow-sky-500/10">OK</kbd> Launch</span>
+          <span className="flex items-center gap-3"><kbd className="bg-slate-800 px-2 py-1 rounded text-sky-400 border border-white/10 shadow-sm shadow-sky-500/10">↔</kbd> Navigate</span>
+          <span className="flex items-center gap-3"><kbd className="bg-slate-800 px-2 py-1 rounded text-sky-400 border border-white/10 shadow-sm shadow-sky-500/10">BACK</kbd> Close</span>
         </div>
       </footer>
     </div>
