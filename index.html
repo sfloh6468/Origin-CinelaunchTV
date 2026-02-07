@@ -4,11 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>CineLaunch TV</title>
+    <link rel="manifest" href="manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
         
         body {
             font-family: 'Inter', sans-serif;
@@ -18,25 +21,32 @@
             overflow-x: hidden;
         }
 
-        /* TV-like focus rings */
+        /* TV-optimized Focus States */
         :focus {
-            outline: 3px solid #38bdf8 !important;
+            outline: 4px solid #38bdf8 !important;
             outline-offset: 4px;
-            transition: outline-offset 0.2s ease;
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.5);
+            transition: all 0.2s ease-in-out;
+            z-index: 50;
         }
 
-        ::-webkit-scrollbar {
-            width: 8px;
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
         }
-        ::-webkit-scrollbar-track {
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
             background: #1e293b;
         }
-        ::-webkit-scrollbar-thumb {
-            background: #475569;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #64748b;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
         }
     </style>
 <script type="importmap">
