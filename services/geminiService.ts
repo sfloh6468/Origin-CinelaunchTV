@@ -1,5 +1,6 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
+import { ROOT_LANGUAGES } from "../types";
 
 export const getMovieMetadata = async (input: string, existingCategories: string[]) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -7,10 +8,12 @@ export const getMovieMetadata = async (input: string, existingCategories: string
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Extract movie details from this input: "${input}". 
-      If it's a YouTube URL, try to identify what the movie/video is about. 
-      If it's just a title, provide a professional movie description.
-      Suggest a category. Try to pick from these existing ones if they fit: ${existingCategories.join(', ')}, otherwise suggest a new single-word category.`,
+      contents: `Extract movie details from: "${input}". 
+      
+      REQUIREMENTS:
+      1. Detect Language: Choose from ${ROOT_LANGUAGES.join(', ')}. Look for specific characters (e.g., Chinese) or context.
+      2. Suggest Genre: Pick from ${existingCategories.join(', ')} or suggest a new one.
+      3. Return a professional title and summary.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -18,12 +21,16 @@ export const getMovieMetadata = async (input: string, existingCategories: string
           properties: {
             title: { type: Type.STRING },
             description: { type: Type.STRING },
+            language: { 
+              type: Type.STRING, 
+              description: "Must be one of the root languages provided." 
+            },
             category: { 
               type: Type.STRING, 
-              description: "The movie category." 
+              description: "The movie sub-genre (in English, app will localize)." 
             },
           },
-          required: ["title", "description", "category"]
+          required: ["title", "description", "language", "category"]
         },
       },
     });

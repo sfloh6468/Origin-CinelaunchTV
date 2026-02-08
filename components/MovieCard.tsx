@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback } from 'react';
-import { Movie } from '../types';
+import { Movie, GENRE_MAP } from '../types';
 
 interface MovieCardProps {
   movie: Movie;
@@ -13,12 +13,8 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie, onDelete, onEdit }) => {
   const [showDescription, setShowDescription] = useState(false);
 
   const handleLaunch = useCallback((e: React.MouseEvent | React.KeyboardEvent) => {
-    // If an overlay is visible, don't launch the video
     if (showDeletePrompt || showDescription) return;
-    
-    // Check if it's a keyboard event and only proceed if it's Enter
     if ('key' in e && e.key !== 'Enter') return;
-    
     window.open(movie.youtubeUrl, '_blank');
   }, [movie.youtubeUrl, showDeletePrompt, showDescription]);
 
@@ -49,125 +45,72 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie, onDelete, onEdit }) => {
     setShowDescription(false);
   }, []);
 
+  const localizedGenre = GENRE_MAP[movie.language]?.[movie.category] || movie.category;
+
   return (
-    <div className="group relative flex flex-col gap-3 focus-within:outline-none">
-      {/* Poster Display Area */}
+    <div className="group relative flex flex-col gap-3 focus-within:outline-none focus-within:scale-105 transition-transform duration-300">
       <div 
         role="button"
         tabIndex={0}
         onClick={handleLaunch}
         onKeyDown={handleLaunch}
-        className="aspect-[2/3] relative rounded-2xl overflow-hidden bg-slate-900 shadow-2xl cursor-pointer transform transition-all duration-500 group-hover:scale-[1.05] group-hover:-translate-y-2 group-focus:scale-[1.05] group-focus:-translate-y-2 ring-1 ring-white/5 outline-none"
+        className="aspect-[2/3] relative rounded-2xl overflow-hidden bg-slate-900 shadow-xl cursor-pointer ring-1 ring-white/5 outline-none group-focus:ring-sky-500"
       >
         <img 
           src={movie.photoUrl || 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400&h=600&fit=crop'} 
           alt={movie.title}
-          className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-500"
+          className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-focus:scale-110"
           loading="lazy"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400&h=600&fit=crop';
-          }}
         />
         
-        {/* Play Icon Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-4">
-          <div className="w-16 h-16 bg-sky-500 rounded-full flex items-center justify-center text-white shadow-2xl scale-75 group-hover:scale-100 transition-transform duration-500">
-            <i className="fas fa-play text-xl ml-1"></i>
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity flex flex-col items-center justify-center">
+          <div className="w-12 h-12 bg-sky-500 rounded-full flex items-center justify-center text-white shadow-2xl transform transition-transform duration-500 group-hover:scale-110">
+            <i className="fas fa-play text-lg ml-1"></i>
           </div>
-          <span className="text-white text-[10px] font-black uppercase tracking-[0.3em] bg-black/60 px-4 py-1.5 rounded-full backdrop-blur-md border border-white/10">
-            Play Video
-          </span>
         </div>
 
-        {/* NARRATIVE OVERLAY */}
         {showDescription && (
-          <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-xl flex flex-col p-5 z-[90] animate-in fade-in zoom-in duration-300">
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-[10px] font-black text-sky-400 uppercase tracking-widest">Brief Narrative</span>
-              <button 
-                onClick={handleCloseOverlays}
-                className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all"
-              >
+          <div className="absolute inset-0 bg-slate-950/98 backdrop-blur-3xl flex flex-col p-6 z-[90] animate-in fade-in zoom-in duration-300">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-xs font-black text-sky-400 uppercase tracking-widest">{localizedGenre}</span>
+              <button onClick={handleCloseOverlays} className="w-8 h-8 rounded-full flex items-center justify-center text-white/50 hover:text-white bg-white/10">
                 <i className="fas fa-times text-xs"></i>
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
-              <p className="text-xs leading-relaxed text-slate-300 font-medium">
-                {movie.description || "No description provided for this video."}
-              </p>
-            </div>
-            <div className="pt-4 border-t border-white/5">
-               <button 
-                onClick={handleCloseOverlays}
-                className="w-full py-3 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all"
-              >
-                Back to Poster
-              </button>
+            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 text-slate-200 text-sm leading-relaxed font-bold">
+              {movie.description || "No description provided."}
             </div>
           </div>
         )}
 
-        {/* DELETE CONFIRMATION OVERLAY */}
         {showDeletePrompt && (
-          <div className="absolute inset-0 bg-slate-950/98 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center z-[100] animate-in fade-in zoom-in duration-300">
-            <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mb-4">
-              <i className="fas fa-trash-alt text-red-500 text-xl"></i>
-            </div>
-            <p className="text-sm font-black text-white mb-6 uppercase tracking-wider leading-tight">Remove from library?</p>
+          <div className="absolute inset-0 bg-slate-950/98 backdrop-blur-3xl flex flex-col items-center justify-center p-6 text-center z-[100] animate-in fade-in zoom-in duration-300">
+            <i className="fas fa-trash-alt text-red-500 text-3xl mb-4 opacity-40"></i>
+            <p className="text-sm font-black text-white mb-6 uppercase tracking-widest">Remove Entry?</p>
             <div className="flex flex-col w-full gap-3">
-              <button 
-                onClick={handleConfirmDelete}
-                className="w-full py-4 bg-red-600 hover:bg-red-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-red-600/20 transition-all active:scale-95"
-              >
-                Yes, Delete
-              </button>
-              <button 
-                onClick={handleCloseOverlays}
-                className="w-full py-4 bg-slate-800 hover:bg-slate-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95"
-              >
-                Cancel
-              </button>
+              <button onClick={handleConfirmDelete} className="w-full py-3 bg-red-600 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all">Delete</button>
+              <button onClick={handleCloseOverlays} className="w-full py-3 bg-slate-800 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all">Cancel</button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Info Block */}
-      <div className="px-1 flex flex-col gap-1.5">
-        <div className="flex justify-between items-start">
-          <h3 className="text-sm font-black text-white line-clamp-1 flex-1 leading-none tracking-tight group-hover:text-sky-400 transition-colors">
+      <div className="px-1 space-y-1">
+        <div className="flex justify-between items-start gap-3">
+          <h3 className="text-base font-black text-white line-clamp-1 flex-1 leading-tight tracking-tight group-hover:text-sky-400 transition-colors">
             {movie.title}
           </h3>
-          <div className="flex items-center gap-3 shrink-0 ml-2">
-            <button 
-              onClick={handleInfoClick}
-              className="text-slate-600 hover:text-sky-400 transition-colors focus:text-sky-400 p-1 outline-none"
-              title="View Narrative"
-              aria-label="View Description"
-            >
-              <i className="fas fa-info-circle text-xs"></i>
-            </button>
-            <button 
-              onClick={handleEdit}
-              className="text-slate-600 hover:text-sky-400 transition-colors focus:text-sky-400 p-1 outline-none"
-              aria-label="Edit"
-            >
-              <i className="fas fa-edit text-xs"></i>
-            </button>
-            <button 
-              onClick={handleDeleteClick}
-              className="text-slate-600 hover:text-red-500 transition-colors focus:text-red-500 p-1 outline-none"
-              aria-label="Delete"
-            >
-              <i className="fas fa-trash-alt text-xs"></i>
-            </button>
+          <div className="flex items-center gap-2 shrink-0">
+             <button onClick={handleInfoClick} className="text-slate-500 hover:text-sky-400 p-1"><i className="fas fa-info-circle text-sm"></i></button>
+             <button onClick={handleEdit} className="text-slate-500 hover:text-sky-400 p-1"><i className="fas fa-edit text-xs"></i></button>
+             <button onClick={handleDeleteClick} className="text-slate-500 hover:text-red-500 p-1"><i className="fas fa-trash-alt text-xs"></i></button>
           </div>
         </div>
-        <div>
-          <span className="text-[9px] font-black text-sky-500 uppercase tracking-widest bg-sky-500/10 border border-sky-500/20 px-2.5 py-1 rounded-md">
-            {movie.category}
-          </span>
-        </div>
+        
+        {/* Narrative snippet replaces Language/Genre badges */}
+        <p className="text-[11px] font-medium text-slate-400 line-clamp-2 leading-snug">
+          {movie.description || "No narrative available."}
+        </p>
       </div>
     </div>
   );
