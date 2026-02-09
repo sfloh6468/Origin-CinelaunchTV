@@ -5,9 +5,17 @@ export interface Movie {
   youtubeUrl: string;
   photoUrl: string;
   description: string;
-  language: string; // Root: English, Chinese, Malay, India
-  category: string; // Sub: Action, Comedy, etc.
+  language: string;
+  category: string;
   createdAt: number;
+  lastUpdated?: number; // For sync tracking
+}
+
+export interface CloudConfig {
+  remoteUrl: string;
+  isAdmin: boolean;
+  syncInterval: number; // in minutes
+  lastSync: number;
 }
 
 export const ROOT_LANGUAGES = ['English', 'Chinese', 'Malay', 'India'];
@@ -60,10 +68,3 @@ export const GENRE_MAP: Record<string, Record<string, string>> = {
 };
 
 export const DEFAULT_GENRES = ['Action', 'Comedy', 'Drama', 'Sci-Fi', 'Horror', 'Documentary', 'Animation', 'Other'];
-
-export interface AIResponse {
-  title?: string;
-  description?: string;
-  language?: string;
-  category?: string;
-}

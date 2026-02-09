@@ -6,9 +6,10 @@ interface MovieCardProps {
   movie: Movie;
   onDelete: (id: string) => void;
   onEdit: (movie: Movie) => void;
+  readOnly?: boolean;
 }
 
-const MovieCard: React.FC<MovieCardProps> = ({ movie, onDelete, onEdit }) => {
+const MovieCard: React.FC<MovieCardProps> = ({ movie, onDelete, onEdit, readOnly }) => {
   const [showDeletePrompt, setShowDeletePrompt] = useState(false);
   const [showDescription, setShowDescription] = useState(false);
 
@@ -102,12 +103,15 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie, onDelete, onEdit }) => {
           </h3>
           <div className="flex items-center gap-2 shrink-0">
              <button onClick={handleInfoClick} className="text-slate-500 hover:text-sky-400 p-1"><i className="fas fa-info-circle text-sm"></i></button>
-             <button onClick={handleEdit} className="text-slate-500 hover:text-sky-400 p-1"><i className="fas fa-edit text-xs"></i></button>
-             <button onClick={handleDeleteClick} className="text-slate-500 hover:text-red-500 p-1"><i className="fas fa-trash-alt text-xs"></i></button>
+             {!readOnly && (
+               <>
+                 <button onClick={handleEdit} className="text-slate-500 hover:text-sky-400 p-1"><i className="fas fa-edit text-xs"></i></button>
+                 <button onClick={handleDeleteClick} className="text-slate-500 hover:text-red-500 p-1"><i className="fas fa-trash-alt text-xs"></i></button>
+               </>
+             )}
           </div>
         </div>
         
-        {/* Narrative snippet replaces Language/Genre badges */}
         <p className="text-[11px] font-medium text-slate-400 line-clamp-2 leading-snug">
           {movie.description || "No narrative available."}
         </p>
